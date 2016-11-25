@@ -1,0 +1,33 @@
+<ion-side-menus enable-menu-with-back-views="false" ng-controller="tCCtrl">
+  <ion-side-menu-content>
+    <ion-nav-bar class="bar-royal">
+      <ion-nav-back-button></ion-nav-back-button>
+      <ion-nav-buttons side="left">
+        <button class="button button-icon button-clear ion-navicon" menu-toggle="left"></button>
+      </ion-nav-buttons>
+    </ion-nav-bar>
+    <ion-nav-view name="side-menu21"></ion-nav-view>
+  </ion-side-menu-content>
+  <ion-side-menu side="left" id="side-menu21">
+    <ion-header-bar class="bar-royal">
+      <div class="title">TC</div>
+    </ion-header-bar>
+    <ion-content padding="false" class="side-menu-left has-header ">
+      <ion-list id="tC-list1">
+        <ion-item class="item-icon-right positive" id="tC-list-item1" ui-sref="tC.home" menu-close="">Home
+          <i class="icon ion-android-home"></i>
+        </ion-item>
+        <ion-item class="item-icon-right assertive" id="tC-list-item2" ui-sref="tC.alert" menu-close="">Post Alert
+          <i class="icon ion-alert-circled"></i>
+        </ion-item>
+        <ion-item class="item-icon-right royal" id="tC-list-item3" ui-sref="tC.profile" menu-close="">Profile
+          <i class="icon ion-android-contact"></i>
+        </ion-item>
+        <ion-item class="item-icon-right dark" id="tC-list-item17" ng-click="logOut()" menu-close="">
+          Logout
+          <i class="icon ion-log-out"></i>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-side-menu>
+</ion-side-menus>

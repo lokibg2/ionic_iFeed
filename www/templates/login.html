@@ -1,0 +1,28 @@
+<ion-view title="Login" id="page10" ng-controller="loginCtrl">
+  <ion-content padding="true" class="has-header">
+    <form id="login-form9" class="list">
+      <h3 id="login-heading1" style="color:#790101;font-weight:600;text-align:center;">Join us to Take Care</h3>
+      <ion-list id="login-list2">
+        <label class="item item-input" id="login-input8">
+          <input type="text" placeholder="E-mail ID" ng-model="user.email">
+        </label>
+        <label class="item item-input" id="login-input9">
+          <input type="password" placeholder="Password" ng-model="user.password">
+        </label>
+      </ion-list>
+      <div class="spacer" style="height: 40px;"></div>
+      <a id="login-button3" class="button button-stable  button-block" ng-click="login()">Log in</a>
+      <button id="login-button9" class="button button-positive  button-block icon-left ion-social-facebook"
+              ng-click="fbLogin();">Login with Facebook
+      </button>
+      <button id="login-button10" class="button button-assertive  button-block icon-left ion-social-googleplus"
+              ng-click="googleLogin()">Login
+        with Google+
+      </button>
+      <a ui-sref="tC.signup" id="login-button4" class="button button-positive  button-block button-clear">Or create an
+        account</a>
+
+      <ion-label>{{err}}</ion-label>
+    </form>
+  </ion-content>
+</ion-view>

@@ -1,0 +1,23 @@
+<ion-view title="Signup" id="page11" ng-controller="signupCtrl">
+  <ion-content padding="true" class="has-header">
+    <form id="signup-form10" class="list">
+      <h3 id="signup-heading2" style="color:#790101;font-weight:600;text-align:center;">Join us to Take Care</h3>
+      <ion-list id="signup-list3">
+        <label class="item item-input" id="signup-input10">
+          <input type="text" placeholder="Name" ng-model="user.name">
+        </label>
+        <label class="item item-input" id="signup-input11">
+          <input type="tel" placeholder="Phone" ng-model="user.phone">
+        </label>
+        <label class="item item-input" id="signup-input12">
+          <input type="email" placeholder="Email" ng-model="user.email">
+        </label>
+        <label class="item item-input" id="signup-input13">
+          <input type="password" placeholder="Password" ng-model="user.password">
+        </label>
+      </ion-list>
+      <div class="spacer" style="height: 40px;"></div>
+    </form>
+    <a id="signup-button12" class="button button-stable  button-block" ng-click="signup()">Signup</a>
+  </ion-content>
+</ion-view>
