@@ -2,20 +2,25 @@
   <ion-content padding="true" class="has-header">
     <div class="list card" id="alert-card23">
       <ion-item class="item-icon-left assertive" id="alert-list-item8">
+
         <i class="icon ion-compose"></i>Post an Alert
       </ion-item>
       <div class="item item-body" id="alert-list-item-container6">
         <form id="alert-form8" class="list">
-          <label class="item item-input item-floating-label" id="alert-input2" name="title" ng-model="crisis.title">
-            <input type="text" placeholder="Title">
+          <label class="item item-input item-floating-label" id="alert-input2">
+            <span class="input-label">Title</span>
+            <input type="text" placeholder="Title" ng-model="crisis.title">
           </label>
-          <label class="item item-input item-floating-label" id="alert-input3" name="Locality"
-                 ng-model="crisis.locality">
-            <input type="text" placeholder="Locality">
+          <label class="item item-input item-floating-label" id="alert-input3">
+            <span class="input-label">Description</span>
+            <input type="text" placeholder="Description" ng-model="crisis.description">
           </label>
-          <ion-item class="range range-positive" id="alert-range1">Emergency Level
-            <input type="range" value="50" min="0" max="100" step="1" name="Emergency Level" ng-model="crisis.level">
-          </ion-item>
+
+          <ion-list>
+            <ion-radio ng-model="crisis.choice" ng-value="'Ambulance'">Ambulance</ion-radio>
+            <ion-radio ng-model="crisis.choice" ng-value="'FireEngine'">Fire Engine</ion-radio>
+            <ion-radio ng-model="crisis.choice" ng-value="'RescueVehicle'">Rescue Vehicle</ion-radio>
+          </ion-list>
         </form>
         <button id="alert-button2" style="font-weight:500;" class="button button-assertive button-large button-block"
                 ng-click="post()">

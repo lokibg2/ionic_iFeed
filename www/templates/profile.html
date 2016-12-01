@@ -1,14 +1,17 @@
 <ion-view title="Profile" id="page9">
   <ion-content padding="true" class="has-header">
     <div class="list card" id="profile-card24">
-      <ion-item class="dark" id="profile-list-item10">Lokeshwaran</ion-item>
+      <ion-item class="dark" id="profile-list-item10">{{currUser.displayName}}</ion-item>
       <div class=" item item-image">
-        <img src="img/5emdjWPiR2KwqAVgXByM_12661893_984326658283189_3042744731997417302_n.jpg" style="display: block; width: 100%; height: auto; margin-left: auto; margin-right: auto;">
+        <img ng-src="{{currUser.photoURL || 'img/profile.jpg'}}"
+             style="display: block; width: 100%; height: auto; margin-left: auto; margin-right: auto;">
       </div>
       <ion-item class="item-icon-left calm" id="profile-list-item11">
-        <i class="icon ion-android-phone-portrait"></i>9566233345</ion-item>
+        <i class="icon ion-email"></i>{{currUser.email}}
+      </ion-item>
       <ion-item class="item-icon-left assertive" id="profile-list-item12">
-        <i class="icon ion-android-warning"></i>10 Crises Posted</ion-item>
+        <i class="icon ion-android-warning"></i>{{currUser.count || 0}} Crises Posted
+      </ion-item>
     </div>
   </ion-content>
 </ion-view>
