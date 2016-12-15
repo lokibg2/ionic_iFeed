@@ -3,9 +3,13 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/platforms" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/org.pbernasconi.progressindicator/demo/plugins/org.pbernasconi.progressIndicator/demo/platforms" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/org.pbernasconi.progressindicator/demo/plugins/org.pbernasconi.progressIndicator/demo/plugins/org.pbernasconi.progressIndicator/demo/platforms" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/org.pbernasconi.progressindicator/demo/plugins/org.pbernasconi.progressIndicator/demo/plugins/org.pbernasconi.progressIndicator/demo/plugins/org.pbernasconi.progressIndicator/demo/platforms" />
       <excludeFolder url="file://$MODULE_DIR$/plugins/phonegap-facebook-plugin/platforms" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="TC node_modules" level="project" />
   </component>
 </module>

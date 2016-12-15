@@ -1,10 +1,41 @@
 angular.module('app.controllers', [])
 
-  .controller('tCCtrl', ['$scope', '$stateParams', '$state', '$rootScope', '$ionicLoading', '$ionicPlatform', '$cordovaGeolocation',
-    // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
-    function ($scope, $stateParams, $state, $rootScope, $ionicLoading, $ionicPlatform, $cordovaGeolocation) {
+  .controller('tCCtrl', ['$scope', '$stateParams', '$state', '$rootScope', '$ionicLoading', '$ionicPlatform',
+    '$cordovaGeolocation', '$cordovaSms',
+    function ($scope, $stateParams, $state, $rootScope, $ionicLoading, $ionicPlatform, $cordovaGeolocation, $cordovaSms) {
+      $ionicPlatform.ready(() => {
+        $rootScope.currUser = {};
+        var watchOptions = {
+          timeout: 15000,
+          enableHighAccuracy: false // may cause errors if true
+        };
+
+        var watch = $cordovaGeolocation.watchPosition(watchOptions);
+        watch.then(
+          null,
+          function (err) {
+            // error
+            console.log(err);
+          },
+          function (position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+            $rootScope.currUser.lat = lat;
+            $rootScope.currUser.lng = long;
+            console.log($rootScope.currUser.lat);
+            /*$cordovaSms.send('+91-9543554433', `Emergency - @ ${$rootScope.currUser.lat}, ${$rootScope.currUser.lng} (Don't edit this!)`)
+             .then(function () {
+             alert("Sent");
+             console.log("Sent");
+
+             }, function (error) {
+             alert(error);
+             // An error occurred
+             });*/
+          }
+        );
+
+      });
 
       firebase.auth().onAuthStateChanged((user) => {
           if (user) {
@@ -16,50 +47,14 @@ angular.module('app.controllers', [])
               $rootScope.currUser.count = snapshot.val();
               // $scope.$digest();
             });
-            $ionicPlatform.ready(() => {
 
-
-              var watchOptions = {
-                timeout: 10000,
-                enableHighAccuracy: false // may cause errors if true
-              };
-
-              var watch = $cordovaGeolocation.watchPosition(watchOptions);
-              watch.then(
-                null,
-                function (err) {
-                  // error
-                  console.log(err);
-                },
-                function (position) {
-                  var lat = position.coords.latitude;
-                  var long = position.coords.longitude;
-                  $rootScope.currUser.lat = lat;
-                  $rootScope.currUser.lng = long;
-                });
-
-
-              /*
-               var posOptions = {timeout: 10000, enableHighAccuracy: false};
-               $cordovaGeolocation
-               .getCurrentPosition(posOptions)
-               .then((position) => {
-               var lat = position.coords.latitude;
-               var long = position.coords.longitude;
-               console.log(lat);
-               console.log(long);
-               }, (err) => {
-               // error
-               });
-
-               });*/
-            });
           }
           else {
             $state.go('tC.login')
           }
         }
-      );
+      )
+      ;
 
       $rootScope.showLoad = function () {
         $ionicLoading.show({
@@ -87,30 +82,77 @@ angular.module('app.controllers', [])
     }
   ])
 
-  .controller('homeCtrl', ['$scope', '$stateParams', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
-    function ($scope, $stateParams) {
+  .controller('homeCtrl', ['$scope', '$stateParams', '$cordovaSms', '$ionicPlatform', '$cordovaDeviceMotion',
+    function ($scope, $stateParams, $cordovaSms, $ionicPlatform, $cordovaDeviceMotion) {
+      // watch Acceleration
+      var options = {frequency: 20000};
+
+      $ionicPlatform.ready(() => {
+        var watch = $cordovaDeviceMotion.watchAcceleration(options);
+        watch.then(
+          null,
+          function (error) {
+            // An error occurred
+          },
+          function (result) {
+            var X = result.x;
+            var Y = result.y;
+            var Z = result.z;
+            var timeStamp = result.timestamp;
+            console.log(X, Y, Z);
+          });
+
+
+      }, false);
+
 
     }])
 
-  .controller('alertCtrl', ['$scope', '$stateParams', '$rootScope', '$state', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
-    ($scope, $stateParams, $rootScope, $state) => {
+  .controller('alertCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$cordovaSms', '$ionicPlatform', '$cordovaNetwork',
+    ($scope, $stateParams, $rootScope, $state, $cordovaSms, $ionicPlatform, $cordovaNetwork) => {
       $scope.crisis = {};
+
+      function getPostcode(address) {
+        for (p = address.length - 1; p >= 0; p--) {
+          if (address[p].types.indexOf("postal_code") != -1) {
+            return address[p].long_name;
+          }
+        }
+      }
+
       $scope.post = () => {
-        console.log($scope.crisis);
-        if ($scope.crisis !== {}) {
+        var geocoder = new google.maps.Geocoder();
+        console.log($scope.crisis.choice);
+        if ($scope.crisis.choice) {
           $scope.crisis.lat = $rootScope.currUser.lat;
           $scope.crisis.lng = $rootScope.currUser.lng;
-          firebase.database().ref(`crises/${$rootScope.currUser.uid}`).push().set($scope.crisis);
-          let countRef = firebase.database().ref(`crises/${$rootScope.currUser.uid}/count`);
-          countRef.transaction(function (current_value) {
-            return (current_value || 0) + 1;
+          $scope.crisis.uid = $rootScope.currUser.uid;
+          let pinCode = 0;
+          let latlng = new google.maps.LatLng($scope.crisis.lat, $scope.crisis.lng);
+          geocoder.geocode({'latLng': latlng}, (results, status) => {
+            if (status == google.maps.GeocoderStatus.OK) {
+              pinCode = getPostcode(results[0].address_components);
+              $ionicPlatform.ready(() => {
+                firebase.database().ref(`crises/open/${pinCode}`).push().set($scope.crisis);
+                let countRef = firebase.database().ref(`crises/open/count`);
+                countRef.transaction(function (current_value) {
+                  return (current_value || 0) + 1;
+                });
+                countRef = firebase.database().ref(`crises/open/${pinCode}/count`);
+                countRef.transaction(function (current_value) {
+                  return (current_value || 0) + 1;
+                });
+                countRef = firebase.database().ref(`crises/count`);
+                countRef.transaction(function (current_value) {
+                  return (current_value || 0) + 1;
+                });
+                $scope.crisis = {};
+                $state.go('tC.home');
+              });
+            } else {
+              alert('Geocoder failed due to: ' + status);
+            }
           });
-          $scope.crisis = {};
-          $state.go('tC.home');
         } else {
           alert("Please choose emergency type!");
         }
@@ -125,12 +167,10 @@ angular.module('app.controllers', [])
 
     }])
 
-  .controller('loginCtrl', ['$scope', '$stateParams', '$state', '$rootScope',// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
-
+  .controller('loginCtrl', ['$scope', '$stateParams', '$state', '$rootScope',
     ($scope, $stateParams, $state, $rootScope) => {
-      if ($rootScope.currUser) {
+
+      if ($rootScope.currUser && $rootScope.currUser.uid) {
         $state.go('tC.home');
       }
       $scope.user = {};
@@ -252,4 +292,4 @@ angular.module('app.controllers', [])
         })
       }
 
-    }])
+    }]);

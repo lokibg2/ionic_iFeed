@@ -54,6 +54,15 @@ angular.module('app.routes', [])
         }
       })
 
+      .state('login', {
+        url: '/login',
+        views: {
+          'side-menu21': {
+            templateUrl: 'templates/login.html'
+          }
+        }
+      })
+
 
       .state('tC.signup', {
         url: '/signup',
