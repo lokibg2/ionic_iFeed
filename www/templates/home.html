@@ -1,17 +1,33 @@
 <ion-view title="Home" id="page7" hide-back-button="true" ng-controller="homeCtrl">
   <ion-content padding="true" class="has-header">
-    <div class="list card" id="home-card22">
+    <div class="list card" id="home-card23" ng-if="emergencyResponder">
+      <ion-item class="item-thumbnail-left balanced" id="home-list-item16">
+        <img ng-src="{{emergencyResponder.photoURL}}">
+        <h2balanced> Please don't panic!
+          <p style="white-space:normal;">{{emergencyResponder.displayName}} is on the way to rescue you in <strong>{{getTime()}}
+            minute(s)!</strong></p>
+        </h2balanced>
+      </ion-item>
+      <ion-item class="item-icon-left calm" id="profile-list-item11">
+        <i class="icon ion-android-phone-portrait"></i>+91-{{emergencyResponder.phone}}
+      </ion-item>
+      <ion-item class="item-icon-left assertive" id="home-list-item17">
+        <i class="icon ion-alert-circled"></i> Please Stay in a safezone
+      </ion-item>
+
+    </div>
+    <div class="list card" id="home-card22" ng-if="!emergencyResponder">
       <ion-item class="item-thumbnail-left balanced" id="home-list-item6">
         <img src="img/UWfdHGHRXy06cZH4uyHl_smiley.png">
-        <h2balanced>Hey there {{currUser.displayName}}! {{online}}
+        <h2balanced>Hey there {{currUser.displayName}}!
           <p style="white-space:normal;">Hope you're doing good! Stay safe and keep smiling! </p>
         </h2balanced>
       </ion-item>
       <ion-item class="item-icon-left assertive" id="home-list-item7">
-        <i class="icon ion-alert-circled"></i>Alerts Reported : {{currUser.count || 0}}
+        <i class="icon ion-alert-circled"></i> Use only in case of real <br>emergency!
       </ion-item>
     </div>
-    <div class="list card" id="home-card21">
+    <div class="list card" id="home-card21" ng-if="!emergencyResponder && ready">
       <ion-item class="item-icon-left  bgC" id="home-list-item4">
         <i class="icon ion-alert"></i>Post Emergency
       </ion-item>

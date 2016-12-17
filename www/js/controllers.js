@@ -1,21 +1,28 @@
 angular.module('app.controllers', [])
 
   .controller('tCCtrl', ['$scope', '$stateParams', '$state', '$rootScope', '$ionicLoading', '$ionicPlatform',
-    '$cordovaGeolocation', '$cordovaSms',
-    function ($scope, $stateParams, $state, $rootScope, $ionicLoading, $ionicPlatform, $cordovaGeolocation, $cordovaSms) {
+    '$cordovaGeolocation', '$cordovaSms', '$cordovaProgress',
+    function ($scope, $stateParams, $state, $rootScope, $ionicLoading, $ionicPlatform, $cordovaGeolocation,
+              $cordovaSms, $cordovaProgress) {
+      $scope.ready = false;
+      $rootScope.emergencyResponder = undefined;
       $ionicPlatform.ready(() => {
+        NProgress.start();
+
         $rootScope.currUser = {};
         var watchOptions = {
           timeout: 15000,
-          enableHighAccuracy: false // may cause errors if true
+          enableHighAccuracy: false
         };
+
 
         var watch = $cordovaGeolocation.watchPosition(watchOptions);
         watch.then(
           null,
           function (err) {
-            // error
-            console.log(err);
+            NProgress.done();
+            $scope.ready = true;
+            window.location.reload(true);
           },
           function (position) {
             var lat = position.coords.latitude;
@@ -23,6 +30,8 @@ angular.module('app.controllers', [])
             $rootScope.currUser.lat = lat;
             $rootScope.currUser.lng = long;
             console.log($rootScope.currUser.lat);
+            NProgress.done();
+            $scope.ready = true;
             /*$cordovaSms.send('+91-9543554433', `Emergency - @ ${$rootScope.currUser.lat}, ${$rootScope.currUser.lng} (Don't edit this!)`)
              .then(function () {
              alert("Sent");
@@ -42,6 +51,7 @@ angular.module('app.controllers', [])
             console.log(user);
             $state.go('tC.home');
             $rootScope.currUser = user;
+
             var countRef = firebase.database().ref(`crises/${user.uid}/count`);
             countRef.on('value', function (snapshot) {
               $rootScope.currUser.count = snapshot.val();
@@ -82,10 +92,22 @@ angular.module('app.controllers', [])
     }
   ])
 
-  .controller('homeCtrl', ['$scope', '$stateParams', '$cordovaSms', '$ionicPlatform', '$cordovaDeviceMotion',
-    function ($scope, $stateParams, $cordovaSms, $ionicPlatform, $cordovaDeviceMotion) {
+  .controller('homeCtrl', ['$scope', '$interval', '$rootScope', '$stateParams', '$cordovaSms', '$ionicPlatform', '$cordovaDeviceMotion',
+    function ($scope, $interval, $rootScope, $stateParams, $cordovaSms, $ionicPlatform, $cordovaDeviceMotion) {
       // watch Acceleration
       var options = {frequency: 20000};
+      $scope.time = Math.ceil(Math.random() * 10) % 3 + 2;
+      let c = 1;
+      $scope.getTime = () => {
+        if (c) {
+          $interval(() => {
+            $scope.time = $scope.time >= 1 ? $scope.time - 1 : 0;
+          }, 60000);
+          c = 0;
+        }
+        return $scope.time;
+      };
+
 
       $ionicPlatform.ready(() => {
         var watch = $cordovaDeviceMotion.watchAcceleration(options);
@@ -112,48 +134,66 @@ angular.module('app.controllers', [])
     ($scope, $stateParams, $rootScope, $state, $cordovaSms, $ionicPlatform, $cordovaNetwork) => {
       $scope.crisis = {};
 
-      function getPostcode(address) {
-        for (p = address.length - 1; p >= 0; p--) {
-          if (address[p].types.indexOf("postal_code") != -1) {
-            return address[p].long_name;
-          }
-        }
-      }
-
       $scope.post = () => {
-        var geocoder = new google.maps.Geocoder();
-        console.log($scope.crisis.choice);
+        NProgress.start();
         if ($scope.crisis.choice) {
           $scope.crisis.lat = $rootScope.currUser.lat;
           $scope.crisis.lng = $rootScope.currUser.lng;
-          $scope.crisis.uid = $rootScope.currUser.uid;
-          let pinCode = 0;
-          let latlng = new google.maps.LatLng($scope.crisis.lat, $scope.crisis.lng);
-          geocoder.geocode({'latLng': latlng}, (results, status) => {
-            if (status == google.maps.GeocoderStatus.OK) {
-              pinCode = getPostcode(results[0].address_components);
-              $ionicPlatform.ready(() => {
-                firebase.database().ref(`crises/open/${pinCode}`).push().set($scope.crisis);
-                let countRef = firebase.database().ref(`crises/open/count`);
-                countRef.transaction(function (current_value) {
-                  return (current_value || 0) + 1;
-                });
-                countRef = firebase.database().ref(`crises/open/${pinCode}/count`);
-                countRef.transaction(function (current_value) {
-                  return (current_value || 0) + 1;
-                });
-                countRef = firebase.database().ref(`crises/count`);
-                countRef.transaction(function (current_value) {
-                  return (current_value || 0) + 1;
-                });
+          $scope.crisis.uid = firebase.auth().currentUser.uid;
+          $ionicPlatform.ready(() => {
+            var ref = firebase.database().ref(`crises/open/`).push();
+            var crisisId = ref.key;
+            ref.set($scope.crisis);
+            let countRef = firebase.database().ref(`crises/open/count`);
+            countRef.transaction(function (current_value) {
+              return (current_value || 0) + 1;
+            });
+            countRef = firebase.database().ref(`crises/count`);
+            countRef.transaction(function (current_value) {
+              return (current_value || 0) + 1;
+            });
+            let firebaseRef = firebase.database().ref(`geoLoc/1`);
+            let geoFire = new GeoFire(firebaseRef);
+            var geoQuery = geoFire.query({
+              center: [$scope.crisis.lat, $scope.crisis.lng],
+              radius: 20
+            });
+            let minKey = null;
+            let minDist = 25;
+
+
+            geoQuery.on("key_entered", function (key, location, distance) {
+              if (distance < minDist) {
+                minDist = distance;
+                minKey = key;
+              }
+              console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+            });
+            var onReadyRegistration = geoQuery.on("ready", function () {
+
+              let driverRef = firebase.database().ref(`drivers/${minKey}`);
+              driverRef.on('value', (data) => {
+                $rootScope.emergencyResponder = data.val();
+                $rootScope.$apply();
                 $scope.crisis = {};
                 $state.go('tC.home');
+                NProgress.done();
+                geoQuery.cancel();
               });
-            } else {
-              alert('Geocoder failed due to: ' + status);
-            }
-          });
-        } else {
+              driverRef = firebase.database().ref(`drivers/${minKey}/`);
+              driverRef.update({
+                crisisId: crisisId,
+                userName: firebase.auth().currentUser.displayName,
+                myPic: firebase.auth().currentUser.photoURL
+              })
+              ;
+            });
+
+
+          })
+        }
+        else {
+          NProgress.done();
           alert("Please choose emergency type!");
         }
       }
@@ -163,7 +203,6 @@ angular.module('app.controllers', [])
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
     ($scope, $stateParams) => {
-
 
     }])
 
@@ -188,6 +227,7 @@ angular.module('app.controllers', [])
 
           if (!$scope.err) {
             $rootScope.currUser = firebase.auth().currentUser;
+
             $state.go('tC.home');
             console.log("LoggedIn");
           }
@@ -205,7 +245,7 @@ angular.module('app.controllers', [])
           var token = result.credential.accessToken;
           // The signed-in user info.
           $rootScope.currUser = result.user;
-
+          $rootScope.$apply();
           $state.go('tC.home');
           $rootScope.hideLoad();
           // ...
@@ -228,6 +268,7 @@ angular.module('app.controllers', [])
           var token = result.credential.accessToken;
           // The signed-in user info.
           $rootScope.currUser = result.user;
+
           // ...
           $rootScope.hideLoad();
           console.log($rootScope.currUser);
