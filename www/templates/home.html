@@ -20,19 +20,21 @@
       <ion-item class="item-thumbnail-left balanced" id="home-list-item6">
         <img src="img/UWfdHGHRXy06cZH4uyHl_smiley.png">
         <h2balanced>Hey there {{currUser.displayName}}!
-          <p style="white-space:normal;">Hope you're doing good! Stay safe and keep smiling! </p>
+          <p style="white-space:normal;">Hope you're doing good! Feed others and rejoice! </p>
         </h2balanced>
       </ion-item>
       <ion-item class="item-icon-left assertive" id="home-list-item7">
-        <i class="icon ion-alert-circled"></i> Use only in case of real <br>emergency!
+        <i class="icon ion-alert-circled"></i> Refrain from providing stale food
       </ion-item>
     </div>
     <div class="list card" id="home-card21" ng-if="!emergencyResponder && ready">
       <ion-item class="item-icon-left  bgC" id="home-list-item4">
-        <i class="icon ion-alert"></i>Post Emergency
+        <i class="icon ion-spoon"></i>To start feeding
       </ion-item>
       <div class="item item-body" id="home-list-item-container2">
-        <button id="home-button11" class="button button-assertive  button-block" ui-sref="tC.alert">Tap me!</button>
+        <button id="home-button11" class="button button-assertive button-block"
+                ui-sref="tC.alert">Click here!
+        </button>
       </div>
     </div>
   </ion-content>

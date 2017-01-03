@@ -1,5 +1,14 @@
-angular.module('app.controllers', [])
-
+angular.module('app.controllers', ['ionic-timepicker'])
+  .config(function (ionicTimePickerProvider) {
+    var timePickerObj = {
+      inputTime: (((new Date()).getHours() * 60 * 60) + ((new Date()).getMinutes() * 60)),
+      format: 12,
+      step: 15,
+      setLabel: 'Set',
+      closeLabel: 'Close'
+    };
+    ionicTimePickerProvider.configTimePicker(timePickerObj);
+  })
   .controller('tCCtrl', ['$scope', '$stateParams', '$state', '$rootScope', '$ionicLoading', '$ionicPlatform',
     '$cordovaGeolocation', '$cordovaSms', '$cordovaProgress',
     function ($scope, $stateParams, $state, $rootScope, $ionicLoading, $ionicPlatform, $cordovaGeolocation,
@@ -130,72 +139,120 @@ angular.module('app.controllers', [])
 
     }])
 
-  .controller('alertCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$cordovaSms', '$ionicPlatform', '$cordovaNetwork',
-    ($scope, $stateParams, $rootScope, $state, $cordovaSms, $ionicPlatform, $cordovaNetwork) => {
-      $scope.crisis = {};
+  .controller('alertCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$cordovaSms', '$ionicPlatform', '$cordovaNetwork', 'ionicTimePicker', '$http',
+    ($scope, $stateParams, $rootScope, $state, $cordovaSms, $ionicPlatform, $cordovaNetwork, ionicTimePicker, $http) => {
+      ''
+      $scope.food = {};
+      var ipObj1 = {
+        callback: function (val) {      //Mandatory
+          if (typeof (val) === 'undefined') {
+            console.log('Time not selected');
+          } else {
+            var selectedTime = new Date(val * 1000);
+            $scope.food.time = selectedTime.getUTCHours() + ":" + selectedTime.getUTCMinutes();
+            console.log('Selected epoch is : ', val, 'and the time is ', selectedTime.getUTCHours(), 'H :', selectedTime.getUTCMinutes(), 'M');
+          }
+        },
+        inputTime: 50400,   //Optional
+        format: 12,         //Optional
+        step: 15,           //Optional
+        setLabel: 'Set2'    //Optional
+      };
+
+      $scope.timepicker = function () {
+        ionicTimePicker.openTimePicker(ipObj1);
+      }
+
 
       $scope.post = () => {
         NProgress.start();
-        if ($scope.crisis.choice) {
-          $scope.crisis.lat = $rootScope.currUser.lat;
-          $scope.crisis.lng = $rootScope.currUser.lng;
-          $scope.crisis.uid = firebase.auth().currentUser.uid;
-          $ionicPlatform.ready(() => {
-            var ref = firebase.database().ref(`crises/open/`).push();
-            var crisisId = ref.key;
-            ref.set($scope.crisis);
-            let countRef = firebase.database().ref(`crises/open/count`);
-            countRef.transaction(function (current_value) {
-              return (current_value || 0) + 1;
-            });
-            countRef = firebase.database().ref(`crises/count`);
-            countRef.transaction(function (current_value) {
-              return (current_value || 0) + 1;
-            });
-            let firebaseRef = firebase.database().ref(`geoLoc/1`);
-            let geoFire = new GeoFire(firebaseRef);
-            var geoQuery = geoFire.query({
-              center: [$scope.crisis.lat, $scope.crisis.lng],
-              radius: 20
-            });
-            let minKey = null;
-            let minDist = 25;
+        // if ($scope.food.choice) {
+        //   $scope.crisis.lat = $rootScope.currUser.lat;
+        //   $scope.crisis.lng = $rootScope.currUser.lng;
+        //   $scope.crisis.uid = firebase.auth().currentUser.uid;
+        //   $ionicPlatform.ready(() => {
+        //     var ref = firebase.database().ref(`crises/open/`).push();
+        //     var crisisId = ref.key;
+        //     ref.set($scope.crisis);
+        //     let countRef = firebase.database().ref(`crises/open/count`);
+        //     countRef.transaction(function (current_value) {
+        //       return (current_value || 0) + 1;
+        //     });
+        //     countRef = firebase.database().ref(`crises/count`);
+        //     countRef.transaction(function (current_value) {
+        //       return (current_value || 0) + 1;
+        //     });
+        //     let firebaseRef = firebase.database().ref(`geoLoc/1`);
+        //     let geoFire = new GeoFire(firebaseRef);
+        //     var geoQuery = geoFire.query({
+        //       center: [$scope.crisis.lat, $scope.crisis.lng],
+        //       radius: 20
+        //     });
+        //     let minKey = null;
+        //     let minDist = 25;
+        //
+        //
+        //     geoQuery.on("key_entered", function (key, location, distance) {
+        //       if (distance < minDist) {
+        //         minDist = distance;
+        //         minKey = key;
+        //       }
+        //       console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+        //     });
+        //     var onReadyRegistration = geoQuery.on("ready", function () {
+        //
+        //       let driverRef = firebase.database().ref(`drivers/${minKey}`);
+        //       driverRef.on('value', (data) => {
+        //         $rootScope.emergencyResponder = data.val();
+        //         $rootScope.$apply();
+        //         $scope.crisis = {};
+        //         $state.go('tC.home');
+        //         NProgress.done();
+        //         geoQuery.cancel();
+        //       });
+        //       driverRef = firebase.database().ref(`drivers/${minKey}/`);
+        //       driverRef.update({
+        //         crisisId: crisisId,
+        //         userName: firebase.auth().currentUser.displayName,
+        //         myPic: firebase.auth().currentUser.photoURL
+        //       })
+        //       ;
+        //     });
+        //
+        //
+        //   })
+        // }
+        // else {
+        //   NProgress.done();
+        //   alert("Please choose emergency type!");
+        // }
 
+        $scope.food.latitude = $rootScope.currUser.lat;
+        $scope.food.longitude = $rootScope.currUser.lng;
+        $scope.food.uid = firebase.auth().currentUser.uid;
 
-            geoQuery.on("key_entered", function (key, location, distance) {
-              if (distance < minDist) {
-                minDist = distance;
-                minKey = key;
-              }
-              console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-            });
-            var onReadyRegistration = geoQuery.on("ready", function () {
+        console.log($scope.food);
 
-              let driverRef = firebase.database().ref(`drivers/${minKey}`);
-              driverRef.on('value', (data) => {
-                $rootScope.emergencyResponder = data.val();
-                $rootScope.$apply();
-                $scope.crisis = {};
-                $state.go('tC.home');
-                NProgress.done();
-                geoQuery.cancel();
-              });
-              driverRef = firebase.database().ref(`drivers/${minKey}/`);
-              driverRef.update({
-                crisisId: crisisId,
-                userName: firebase.auth().currentUser.displayName,
-                myPic: firebase.auth().currentUser.photoURL
-              })
-              ;
-            });
+        // var req = {
+        //   method: 'POST',
+        //   url: 'http://localhost:3000/postFeed',
+        //   headers: {
+        //     'Content-Type': 'application / json'
+        //   },
+        //   data: $scope.food
+        // };
+        //
+        // $http(req).then(function () {
+        //   console.log("success")
+        // }, function () {
+        //   console.log("Failed")
+        //});
 
+        $http.post("http://localhost:3000/postFeed", $scope.food).success(function (data) {
+          //Callback function here.
+          //"data" is the response from the server.
+        });
 
-          })
-        }
-        else {
-          NProgress.done();
-          alert("Please choose emergency type!");
-        }
       }
     }])
 

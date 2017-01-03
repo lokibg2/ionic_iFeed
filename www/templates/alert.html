@@ -3,28 +3,33 @@
     <div class="list card" id="alert-card23">
       <ion-item class="item-icon-left assertive" id="alert-list-item8">
 
-        <i class="icon ion-compose"></i>Post an Alert
+        <i class="icon ion-compose"></i>Start Feeding!
       </ion-item>
       <div class="item item-body" id="alert-list-item-container6">
         <form id="alert-form8" class="list">
-          <label class="item item-input item-floating-label" id="alert-input2">
-            <span class="input-label">Title</span>
-            <input type="text" placeholder="Title" ng-model="crisis.title">
+          <span class="input-label">Type</span>
+          <ion-list>
+            <ion-radio ng-model="food.name" ng-value="'Breads'">Breads</ion-radio>
+            <ion-radio ng-model="food.name" ng-value="'Rice'">Rice</ion-radio>
+            <ion-radio ng-model="food.name" ng-value="'Fruits/Vegetables'">Fruits/Vegetables</ion-radio>
+            <ion-radio ng-model="food.name" ng-value="'Dairy'">Dairy</ion-radio>
+            <ion-radio ng-model="food.name" ng-value="'Gravy'">Gravy</ion-radio>
+          </ion-list>
+          <label class="item item-input item-floating-label" id="alert-input1">
+            <span class="input-label">Number of people who can be fed</span>
+            <input type="text" placeholder="Number of people who can be fed" ng-model="food.quantity">
           </label>
           <label class="item item-input item-floating-label" id="alert-input3">
-            <span class="input-label">Description</span>
-            <input type="text" placeholder="Description" ng-model="crisis.description">
+            <span class="input-label">Cooked At</span>
+            <button id="alert-button3" style="font-weight:500;"
+                    class="button button-assertive button-medium" ng-click="timepicker()">Cooked At
+            </button>
+            <span class="text-center">{{food.time + " (HH:MM)"}}</span>
           </label>
-
-          <ion-list>
-            <ion-radio ng-model="crisis.choice" ng-value="'Ambulance'">Ambulance</ion-radio>
-            <ion-radio ng-model="crisis.choice" ng-value="'FireEngine'">Fire Engine</ion-radio>
-            <ion-radio ng-model="crisis.choice" ng-value="'RescueVehicle'">Rescue Vehicle</ion-radio>
-          </ion-list>
         </form>
         <button id="alert-button2" style="font-weight:500;" class="button button-assertive button-large button-block"
                 ng-click="post()">
-          Post
+          Feed!
         </button>
       </div>
     </div>
